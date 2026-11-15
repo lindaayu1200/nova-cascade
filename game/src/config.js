@@ -1,61 +1,63 @@
-// Every tuning number and colour in one place. The playfield is a fixed 1280x720 logical area;
-// the renderer scales it to the window, so no rule below depends on the screen size.
+// Nova Cascade configuration, dimensions, palette and tuning parameters.
 
-export const FIELD = { width: 1280, height: 720, groundY: 664 };
+export const FIELD = {
+  width: 1280,
+  height: 720,
+};
 
-/** The simulation's fixed step, in seconds: 60 updates a second whatever the display's rate. */
 export const STEP = 1 / 60;
 
+export const INITIAL_LIVES = 3;
+export const MAX_WAVES = 15;
+
 export const PLAYER = {
-  width: 72,
-  height: 24,
-  speed: 560,
-  invulnerable: 1.5,
+  radius: 20,
+  speed: 480,
+  accel: 2200,
+  drag: 0.88,
+  invulnerableTime: 2.0,
+  shieldMaxDefault: 100,
+  fireInterval: 0.14,
+  specialCooldown: 7.0,
+  specialRadius: 380,
+  specialDamage: 40,
 };
-
-export const LIVES = 3;
-
-export const BLOCK = {
-  minWidth: 40,
-  maxWidth: 110,
-  height: 36,
-  speed: 240,
-  speedPerLevel: 30,
-  speedJitter: 90,
-  interval: 0.55,
-  intervalScale: 0.88,
-  minInterval: 0.14,
-  dodgePoints: 1,
-};
-
-export const COIN = {
-  size: 24,
-  speed: 190,
-  speedPerLevel: 14,
-  interval: 1.4,
-  intervalJitter: 0.8,
-  points: 10,
-};
-
-/** Seconds of play per level, and the last level: speeds and spawn rates stop growing there. */
-export const LEVEL = { seconds: 12, max: 12 };
-
-/** How many falling things can exist at once; the pool is allocated once, at boot. */
-export const POOL_SIZE = 64;
 
 export const PALETTE = {
-  backdrop: '#11141b',
-  sky: '#1b1f2a',
-  ground: '#2a3040',
-  player: '#4fc3f7',
-  block: '#e5534b',
-  coin: '#f2c94c',
-  panel: '#252b38',
-  text: '#eef1f5',
-  muted: '#8b93a3',
+  spaceBg: '#08091a',
+  nebulaIndigo: 'rgba(28, 14, 58, 0.45)',
+  nebulaCyan: 'rgba(10, 38, 70, 0.45)',
+  starWhite: '#ffffff',
+  starCyan: '#80f8ff',
+  starMagenta: '#ff80d5',
+  
+  player: '#00f0ff',
+  playerGlow: 'rgba(0, 240, 255, 0.5)',
+  playerEngine: '#80f8ff',
+  playerLaser: '#00e5ff',
+  
+  enemyMagenta: '#ff007f',
+  enemyGlow: '#ff2a85',
+  enemyLaser: '#ff40a0',
+  asteroidBody: '#1e1b38',
+  asteroidCrater: '#ff007f',
+  
+  crystalGold: '#ffd700',
+  crystalGlow: '#fff066',
+  crystalSpark: '#ffffff',
+  
+  hudText: '#ffffff',
+  hudMuted: '#8a94b8',
+  hudCyan: '#00f0ff',
+  hudGold: '#ffd700',
+  hudMagenta: '#ff007f',
+  hudGreen: '#00ff88',
+  
+  panelBg: 'rgba(14, 17, 38, 0.92)',
+  panelBorder: '#00f0ff',
+  panelCardBg: 'rgba(24, 28, 58, 0.85)',
 };
 
 export const FONT = 'system-ui, -apple-system, "Segoe UI", sans-serif';
 
-/** Where the best score is kept between visits (this browser only). */
-export const BEST_KEY = 'block-dodger.best';
+export const BEST_KEY = 'nova-cascade.best';

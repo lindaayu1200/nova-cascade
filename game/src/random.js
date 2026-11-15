@@ -1,8 +1,8 @@
-// A small seeded random number generator (mulberry32): the same seed gives the same game,
-// which is what makes the screenshot scenes repeatable.
+// Mulberry32 seeded pseudo-random number generator.
+// Returns a deterministic function generating floats in [0, 1).
 
 export function createRandom(seed) {
-  let a = seed | 0;
+  let a = (seed | 0) || 1;
   return function random() {
     a = (a + 0x6d2b79f5) | 0;
     let t = Math.imul(a ^ (a >>> 15), 1 | a);
