@@ -1,5 +1,5 @@
-// A small seeded random number generator (mulberry32): the same seed gives the same game,
-// which is what makes the screenshot scenes repeatable.
+// A small seeded random number generator (mulberry32) for Nova Cascade: the same seed gives the
+// same game, which is what makes the ?shot= scenes and their screenshot frames repeatable.
 
 export function createRandom(seed) {
   let a = seed | 0;
