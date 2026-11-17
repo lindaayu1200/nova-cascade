@@ -69,7 +69,16 @@ function stagePlay(world) {
   world.spawnAsteroid(0, 974, 334);
   world.spawnAsteroid(1, 148, 392);
   world.spawnDrone(342, 292);
-  world.spawnDrone(1082, 424);
+    world.spawnDrone(1082, 424);
+    world.spawnAsteroid(2, 388, 508);
+    world.spawnAsteroid(1, 806, 566);
+    world.spawnDrone(560, 208);
+    world.spawnDrone(918, 316);
+    world.spawnCrystal(420, 384);
+    world.spawnCrystal(872, 492);
+    world.spawnEnemyBullet(500, 246, 42, 150);
+    world.spawnEnemyBullet(668, 224, -48, 146);
+    world.spawnEnemyBullet(954, 392, 30, 162);
   world.spawnCrystal(508, 466);
   world.spawnCrystal(736, 430);
   world.spawnCrystal(628, 538);
