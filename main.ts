@@ -1,12 +1,10 @@
-// Nova Cascade: an original 2D arcade space game (Node 22, standard library only). The game is this
-// directory's game/ folder, plain static files a desktop browser loads offline (game/index.html and
-// its ES modules, no library and no network request), and the program hands it in. It copies game/
-// and screenshots/ from beside this file to /output and writes /output/dossier.json, the summary the
-// judge reads, with the vendored make.fun library. Steer through a falling asteroid field, auto-fire,
-// split rocks, collect energy crystals, buy upgrades between waves and defeat the wave-15 boss.
-//
-// Serve it locally with `node serve.ts`, then open http://localhost:8080.
-// Outside the grader's container, MAKEFUN_OUTPUT_DIR stands in for /output:
+// Packaging entry point for Nova Cascade.
+// It prepares an output folder containing the browser game and any available
+// preview images, then generates dossier.json via the bundled helper in vendor/.
+// The game is a self-contained arcade shooter: auto-fire at incoming rocks,
+// dodge the falling fragments, collect crystals to buy perks, and beat the
+// wave-15 boss. Run `node serve.ts` to try it at http://localhost:8080.
+// Output lands in /output unless MAKEFUN_OUTPUT_DIR overrides it, e.g.
 //   mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
 
 import { cpSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
@@ -14,27 +12,31 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildDossier } from './vendor/makefun-game.ts';
 
+// Resolve locations relative to this script rather than the caller's cwd.
 const here = fileURLToPath(new URL('.', import.meta.url));
-const out = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
+const outDir = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
 
-mkdirSync(out, { recursive: true });
-cpSync(join(here, 'game'), join(out, 'game'), { recursive: true });
-mkdirSync(join(out, 'screenshots'), { recursive: true });
-if (existsSync(join(here, 'screenshots'))) cpSync(join(here, 'screenshots'), join(out, 'screenshots'), { recursive: true });
+// Game assets are mandatory; the preview folder is only staged if it exists.
+mkdirSync(outDir, { recursive: true });
+cpSync(join(here, 'game'), join(outDir, 'game'), { recursive: true });
 
-// The scorer's own caps (reference/gate.json): only text_max_bytes shapes the bytes; the others refuse an entry the
-// scorer would refuse (more than 4 screenshots or one over 256 KiB; more than 993 files in game/ or 48 MiB of game
-// files, in all, or a path under game/ over 1000 bytes: game/ counts beside /output's own 1000-entry cap, its
-// screenshots/ and dossier.json).
-writeFileSync(
-  join(out, 'dossier.json'),
-  buildDossier(out, {
-    text_max_bytes: 163840,
-    screenshots: { max: 4, max_bytes: 262144 },
-    game_max_files: 993,
-    game_max_bytes: 50331648,
-    game_path_max_bytes: 1000,
-  }),
-);
+const shotDir = join(outDir, 'screenshots');
+mkdirSync(shotDir, { recursive: true });
+const sourceShots = join(here, 'screenshots');
+if (existsSync(sourceShots)) cpSync(sourceShots, shotDir, { recursive: true });
 
-// final pass
+// These thresholds come from reference/gate.json. text_max_bytes caps the
+// generated description; the remaining fields gate acceptance: at most four
+// captures of 256 KiB each, plus 993 game files under 48 MiB whose relative
+// paths stay within 1000 bytes. Screenshots and the dossier count against the
+// same 1000-entry budget as game/.
+const constraints = {
+  text_max_bytes: 163840,
+  screenshots: { max: 4, max_bytes: 262144 },
+  game_max_files: 993,
+  game_max_bytes: 50331648,
+  game_path_max_bytes: 1000,
+};
+
+const dossier = buildDossier(outDir, constraints);
+writeFileSync(join(outDir, 'dossier.json'), dossier);
