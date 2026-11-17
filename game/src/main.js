@@ -24,6 +24,9 @@ import {
   SCREEN_OVER, SCREEN_PAUSED, SCREEN_PLAY, SCREEN_TITLE, SCREEN_UPGRADE, SCREEN_VICTORY,
 } from './render.js';
 import { stageShot } from './shots.js';
+import { announceInit } from './announce.js';
+import { createRunStats } from './stats.js';
+import { createAchievements } from './achievements.js';
 
 /** The longest frame the loop catches up on; a longer stall (a hidden tab) is dropped, not replayed. */
 const MAX_FRAME = 0.25;
@@ -37,6 +40,9 @@ const seed = Number.isInteger(seedParam) ? seedParam : Math.floor(Math.random() 
 const canvas = document.getElementById('game');
 const status = document.getElementById('status');
 const world = createWorld(createRandom(seed));
+const announcer = announceInit(world.state);
+const runStats = createRunStats();
+const achievements = createAchievements();
 const renderer = createRenderer(canvas);
 
 function readBest() {
@@ -76,6 +82,8 @@ function runGame() {
   let last = performance.now();
   let actions = 0;
   let specialRequested = false;
+  let summaryRows = [];
+  let earnedBadges = [];
 
   // Screen readers (and anyone watching the page's text) hear the screen changes and each hit.
   function announce(message) {
@@ -84,6 +92,10 @@ function runGame() {
 
   function startGame() {
     world.reset();
+    announcer.reset(world.state);
+    achievements.reset();
+    summaryRows = [];
+    earnedBadges = [];
     input.releasePointer();
     audio.resume();
     accumulator = 0;
@@ -115,6 +127,8 @@ function runGame() {
     accumulator = 0;
     screen = SCREEN_OVER;
     audio.playGameOver();
+    summaryRows = runStats.summary(world.state);
+    earnedBadges = achievements.earned();
     announce(`Game over. Score ${world.state.score}. Best ${best}.`);
   }
 
@@ -124,6 +138,8 @@ function runGame() {
     accumulator = 0;
     screen = SCREEN_VICTORY;
     audio.playVictory();
+    summaryRows = runStats.summary(world.state);
+    earnedBadges = achievements.earned();
     announce(`Victory. All ${MAX_WAVES} waves cleared. Score ${world.state.score}. Best ${best}.`);
   }
 
@@ -253,7 +269,11 @@ function runGame() {
       world.step(STEP, IDLE, true);
       return;
     }
-    reactTo(world.step(STEP, controlsForStep(), false));
+    const events = world.step(STEP, controlsForStep(), false);
+    runStats.onEvent(events, world.state);
+    achievements.onEvent(events, world.state);
+    announcer.update(events, world.state);
+    reactTo(events);
   }
 
   function frame(now) {
@@ -271,7 +291,11 @@ function runGame() {
     } else {
       accumulator = 0;
     }
-    renderer.draw(world.state, screen, best);
+    renderer.draw(world.state, screen, best, {
+      announcement: announcer.current(),
+      summary: summaryRows,
+      achievements: earnedBadges,
+    });
   }
 
   // Leaving the tab pauses a running game rather than letting waves play out unseen.

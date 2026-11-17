@@ -746,8 +746,79 @@ export function createRenderer(canvas) {
     );
   }
 
+  /** The announcer's current call-out, faded by the alpha it reports, near the top centre. */
+  function drawAnnouncement(line) {
+    if (!line || !line.text) return;
+    const alpha = Number.isFinite(line.alpha) ? Math.max(0, Math.min(1, line.alpha)) : 1;
+    if (alpha <= 0) return;
+    const label = String(line.text);
+    const size = 22;
+    context.save();
+    context.font = `800 ${size}px ${FONT}`;
+    const width = Math.min(FIELD.width - 48, context.measureText(label).width + 48);
+    const pillX = (FIELD.width - width) / 2;
+    const pillY = 86;
+    context.globalAlpha = alpha * 0.6;
+    context.fillStyle = PALETTE.panelBg;
+    roundRect(context, pillX, pillY, width, 38, 19);
+    context.fill();
+    context.globalAlpha = alpha;
+    context.shadowColor = PALETTE.player;
+    context.shadowBlur = 12;
+    text(label, FIELD.width / 2, pillY + 26, size, PALETTE.hudCyan, 'center', '800');
+    context.restore();
+  }
+
+  /** Run stats and earned badges, printed in a block under the results panel's score. */
+  function drawResults(extras) {
+    const rows = Array.isArray(extras.summary) ? extras.summary : [];
+    const badges = Array.isArray(extras.achievements) ? extras.achievements : [];
+    if (rows.length === 0 && badges.length === 0) return;
+
+    const panelX = 80;
+    const panelY = 520;
+    const panelWidth = FIELD.width - 160;
+    const panelHeight = 190;
+    context.save();
+    context.fillStyle = PALETTE.panelBg;
+    roundRect(context, panelX, panelY, panelWidth, panelHeight, 14);
+    context.fill();
+    context.strokeStyle = PALETTE.panelBorder;
+    context.lineWidth = 1;
+    context.stroke();
+    context.textBaseline = 'alphabetic';
+
+    const startY = panelY + 28;
+    const rowStep = 18;
+    const columns = [panelX + 28, panelX + 350, panelX + 700];
+    const columnWidth = 300;
+    const perColumn = 8;
+
+    text('RUN STATS', columns[0], startY, 14, PALETTE.hudCyan, 'left', '700');
+    text('BADGES EARNED', columns[2], startY, 14, PALETTE.hudGold, 'left', '700');
+
+    for (let index = 0; index < rows.length && index < perColumn * 2; index += 1) {
+      const row = Array.isArray(rows[index]) ? rows[index] : [];
+      const column = index < perColumn ? 0 : 1;
+      const x = columns[column];
+      const y = startY + 26 + (index % perColumn) * rowStep;
+      text(String(row[0] ?? ''), x, y, 14, PALETTE.hudMuted, 'left', '600');
+      text(String(row[1] ?? ''), x + columnWidth, y, 14, PALETTE.hudText, 'right', '700');
+    }
+
+    if (badges.length === 0) {
+      text('None yet', columns[2], startY + 26, 14, PALETTE.hudMuted, 'left', '600');
+    } else {
+      for (let index = 0; index < badges.length && index < perColumn; index += 1) {
+        const badge = badges[index] || {};
+        text(String(badge.name ?? ''), columns[2], startY + 26 + index * rowStep, 14, PALETTE.hudGold, 'left', '600');
+      }
+    }
+    context.restore();
+  }
+
   /** Paint one frame: the field, then the HUD or a panel for the screen the game is on. */
-  function draw(state, screen, best) {
+  function draw(state, screen, best, extras = {}) {
     context.setTransform(1, 0, 0, 1, 0, 0);
     context.fillStyle = PALETTE.spaceBgEdge;
     context.fillRect(0, 0, canvas.width, canvas.height);
@@ -784,6 +855,7 @@ export function createRenderer(canvas) {
       return;
     }
     drawHud(state);
+    if (screen === SCREEN_PLAY) drawAnnouncement(extras.announcement);
     if (screen === SCREEN_UPGRADE) {
       drawUpgrade(state);
     } else if (screen === SCREEN_PAUSED) {
@@ -795,6 +867,7 @@ export function createRenderer(canvas) {
         'Press Enter to restart',
         PALETTE.hudMagenta,
       );
+      drawResults(extras);
     } else if (screen === SCREEN_VICTORY) {
       drawPanel(
         'CASCADE COMPLETE',
@@ -802,6 +875,7 @@ export function createRenderer(canvas) {
         'Press Enter to restart',
         PALETTE.hudGold,
       );
+      drawResults(extras);
     }
   }
 
