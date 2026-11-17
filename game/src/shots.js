@@ -171,3 +171,6 @@ export function stageShot(name, world) {
   if (name === 'victory') return stageVictory(world);
   return stageStart(world);
 }
+
+// final pass
+

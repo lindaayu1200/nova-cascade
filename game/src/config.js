@@ -156,7 +156,8 @@ export const PALETTE = {
   overlay: 'rgba(3, 4, 14, 0.62)',
 };
 
-export const FONT = 'system-ui, -apple-system, "Segoe UI", sans-serif';
+export const FONT = 'system-ui, -apple-system, \"Segoe UI\", sans-serif';
 
 /** Where the best score is kept between visits (this browser only). */
 export const BEST_KEY = 'nova-cascade.best';
+// final pass
