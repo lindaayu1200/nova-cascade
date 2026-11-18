@@ -27,6 +27,7 @@ import { stageShot } from './shots.js';
 import { announceInit } from './announce.js';
 import { createRunStats } from './stats.js';
 import { createAchievements } from './achievements.js';
+import { createMissions } from './missions.js';
 
 /** The longest frame the loop catches up on; a longer stall (a hidden tab) is dropped, not replayed. */
 const MAX_FRAME = 0.25;
@@ -43,6 +44,7 @@ const world = createWorld(createRandom(seed));
 const announcer = announceInit(world.state);
 const runStats = createRunStats();
 const achievements = createAchievements();
+const missions = createMissions();
 const renderer = createRenderer(canvas);
 
 function readBest() {
@@ -94,6 +96,7 @@ function runGame() {
     world.reset();
     announcer.reset(world.state);
     achievements.reset();
+    missions.reset();
     summaryRows = [];
     earnedBadges = [];
     input.releasePointer();
@@ -272,6 +275,7 @@ function runGame() {
     const events = world.step(STEP, controlsForStep(), false);
     runStats.onEvent(events, world.state);
     achievements.onEvent(events, world.state);
+    missions.onEvent(events, world.state);
     announcer.update(events, world.state);
     reactTo(events);
   }
@@ -293,6 +297,7 @@ function runGame() {
     }
     renderer.draw(world.state, screen, best, {
       announcement: announcer.current(),
+      mission: missions.current(),
       summary: summaryRows,
       achievements: earnedBadges,
     });

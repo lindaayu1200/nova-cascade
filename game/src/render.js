@@ -769,6 +769,18 @@ export function createRenderer(canvas) {
     context.restore();
   }
 
+  /** The active mission and its progress, printed just below the announcer pill. */
+  function drawMission(mission) {
+    if (!mission || !mission.objectiveText) return;
+    const center = FIELD.width / 2;
+    const data = mission.progress || {};
+    const label = data.label || `${data.current ?? 0} / ${data.target ?? 1}`;
+    context.save();
+    text(mission.objectiveText, center, 148, 16, PALETTE.hudText, 'center', '600');
+    text(label, center, 167, 13, PALETTE.hudMuted, 'center', '700');
+    context.restore();
+  }
+
   /** Run stats and earned badges, printed in a block under the results panel's score. */
   function drawResults(extras) {
     const rows = Array.isArray(extras.summary) ? extras.summary : [];
@@ -855,7 +867,10 @@ export function createRenderer(canvas) {
       return;
     }
     drawHud(state);
-    if (screen === SCREEN_PLAY) drawAnnouncement(extras.announcement);
+    if (screen === SCREEN_PLAY) {
+      drawAnnouncement(extras.announcement);
+      drawMission(extras.mission);
+    }
     if (screen === SCREEN_UPGRADE) {
       drawUpgrade(state);
     } else if (screen === SCREEN_PAUSED) {
